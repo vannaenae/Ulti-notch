@@ -5,6 +5,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follo
 ## [Unreleased]
 
 ### Added
+- First runnable app: island on every display (hardware notch or floating), hover/click/swipe, Battery and Now Playing (Music, Spotify) modules, menu bar item, Settings with per-module toggles.
+- Release workflow: pushing a `v*` tag publishes an ad-hoc signed DMG to GitHub Releases.
 - Architecture doc, scope and assumptions, technical risk research.
 - `UltiNotchKit` Swift package:
   - `NotchCore`: module descriptor and permission model, live activity model and arbitration (`ActivityBoard`), island state machine, notch geometry, reference-counted `ServiceRegistry`, `ModuleHost` lifecycle.
