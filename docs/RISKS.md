@@ -99,3 +99,33 @@ Sources: [Apple Developer Forums: OSDUIHelper on Tahoe](https://developer.apple.
 - The cloud session this work is produced in runs Linux with no Swift toolchain and no route to download one. **Nothing here has been compiled locally.**
 - Mitigation: GitHub Actions on `macos-15` builds and tests `UltiNotchKit` on every push. UI, shell, permissions and performance can only be verified on your Mac. The checklist and Instruments steps are written for that.
 - Cost note: the repo is public, so GitHub-hosted macOS minutes are free. If it goes private, macOS minutes are billed at a multiple of Linux minutes. The workflow is path-filtered and cancels superseded runs either way.
+
+---
+
+## R7. Lock screen UI (v2: lock screen player)
+
+- **No public API draws third-party UI on the macOS lock screen.** (High)
+- Apps that show a player there rely on unsupported window-server behaviour. I haven't verified which calls they use. It's private and fragile, the same class of risk as R1.
+- **Plan:** a spike in Phase 2 that produces a go/no-go. If it's a go, it goes behind the same private-API kill switch (Q1).
+
+## R8. Other apps' notifications and meeting controls
+
+- **Reading notifications:** no public API.
+  - Route A: the Notification Center database. It's undocumented and needs Full Disk Access. That's a big permission to ask for.
+  - Route B: Accessibility scraping of notification banners. Brittle across macOS versions.
+  - Both are unsupported. Decision deferred to Phase 3 (where your brief puts it).
+- **Meeting controls (mute, camera, share, end):** no cross-app API.
+  - Route: send each app's own keyboard shortcut to it (Zoom, Teams). That needs Accessibility. Browser meetings (Meet) need the tab to be focused.
+  - This is supported behaviour, but it breaks when apps change their shortcuts. Phase 2.
+
+## R9. Meeting helper hidden from screen sharing
+
+- `NSWindow.sharingType = .none` still hides a window from **legacy** capture APIs.
+- **On macOS 15+, ScreenCaptureKit (used by modern screen sharing and recording) reportedly ignores it** when capturing a whole display. Electron and Tauri issue trackers report the same. Apple's own forum guidance points away from using the flag for this. (Medium)
+- What *is* reliable: when the user shares a **single window or app** (Zoom, Meet, Teams all offer this), our window isn't part of what's shared.
+- **Plan:**
+  - Set `sharingType = .none` on the helper window anyway.
+  - Show a one-line, honest status: "Hidden when you share a window. May be visible if you share your whole screen."
+  - Never claim it's undetectable. The code is open source, and window lists still show it to any app that looks.
+
+Sources: [Tauri issue #14200](https://github.com/tauri-apps/tauri/issues/14200) · [Electron issue #48258](https://github.com/electron/electron/issues/48258) · [Apple Developer Forums thread 770585](https://developer.apple.com/forums/thread/770585)

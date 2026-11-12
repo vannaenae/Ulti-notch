@@ -1,73 +1,85 @@
-# Scope, assumptions and open questions
+# Scope, assumptions and open questions (v2 brief)
 
-## Scope (restated)
+## The brief, restated
 
-**Product.** A native macOS utility that turns the notch into a Dynamic Island-style command surface. It sits collapsed at the notch, expands on hover, click, swipe or shortcut, and hosts live activities, widgets and utilities. On Macs without a notch and on external displays, it becomes a floating island at the top centre of each screen.
+Ulti Notch is a Dynamic Island for the Mac that matches Droppy feature for feature and beats it on intuitiveness. **Feature parity is the floor. Intuitiveness is the product.** A new user gets value within 30 seconds without opening Settings.
 
-**Positioning.** One quiet, fast, native app that replaces a dock full of utilities.
+The 10 intuitiveness principles override feature requests:
 
-**Phase 1 (MVP) delivers:**
+1. Zero-config first run
+2. Context over configuration
+3. One gesture vocabulary
+4. Progressive disclosure
+5. Discoverable, not memorised (command palette)
+6. Learn from use
+7. Settings that explain themselves (search, presets)
+8. Calm by default
+9. Everything undoable
+10. Fast (expand < 100 ms, idle CPU < 1%)
 
-- Island shell on every display, with hardware notch detection and a floating fallback.
-- State machine: hidden, collapsed, peek, expanded, panel.
-- Appearance: classic black, Dynamic Glass, Liquid Glass.
-- Media: Now Playing (Apple Music, Spotify, YouTube Music, any Now Playing source) with artwork, scrubbing, controls, a visualizer and source choice.
-- HUD replacement: volume, brightness, keyboard backlight.
-- Battery and charging live activity.
-- File shelf: drag in and out, AirDrop, Quick Look.
-- Calendar and Reminders: today view, month grid, next-meeting countdown.
-- Settings window, onboarding, permission flow.
-- Signing, notarisation, Sparkle updates.
+Every feature passes them before it ships.
 
-**Phases 2–4 and the parked spikes** are out of scope until Phase 1 meets its definition of done.
+Phase 1 is the shell plus "the 80%":
 
-**Definition of done (per phase):**
+- Shell, state machine, priority engine, appearance styles, non-notch fallback
+- Now Playing with queue and lyrics
+- File tray with transform
+- Clipboard history
+- HUDs
+- Calendar and Reminders
+- Command palette
+- Settings with search and presets
+- Onboarding
+- Signing and Sparkle
 
-- Runs on a notch MacBook and a non-notch external display.
-- Each module toggles off with no residual CPU.
-- No crashes across sleep, wake, display changes and Space switches.
-- Performance targets met and measured in Instruments.
-- Settings persist across launches.
+Feature-by-feature plan and proposed cuts: [`PHASE1_PLAN.md`](PHASE1_PLAN.md). **Needs your approval before any feature code.**
+
+**Added by you:** a meeting helper that screen sharing can't see. Planned for Phase 2 alongside Meetings and Teleprompter. The technical limits are in [`RISKS.md`](RISKS.md) R9.
+
+## Decided
+
+| Topic | Decision |
+|---|---|
+| Price | Free |
+| Distribution | GitHub Releases, Sparkle auto-update, Homebrew tap (ARCHITECTURE §12) |
+| Licence | Open source, **MIT**. Switching licence is still cheap before the first release, because only you hold copyright so far. |
+| Dynamic Glass | Per the v2 brief: solid black at the notch, melting into glass below. Liquid Glass is Apple's native material on macOS 26+, with a fallback on 14 and 15. Solid style in Low Power Mode. |
+| Extensions | Called **modules**, first-party or third-party. We don't reuse Droppy's term "Droplets". |
 
 ## Assumptions
 
-Each assumption is reversible unless marked ⚠︎.
-
-1. **Single developer account, outside the Mac App Store.** You have, or will get, an Apple Developer Program membership for Developer ID signing and notarisation. Notarisation isn't possible without one.
-2. ⚠︎ **Not sandboxed.** Event taps, Apple Events, the Now Playing adapter and later window management all conflict with App Sandbox. MAS is already excluded, so this costs nothing.
-3. **Apple silicon only for Phase 1.** Intel is untested and gets no special code. Phase 1 has no Apple-silicon-only API, so an Intel build may work. That isn't promised.
-4. **macOS 14.6 minimum, built with the Xcode 26 SDK** so native Liquid Glass is available on macOS 26+.
-5. **SwiftPM for all logic, a thin app target, XcodeGen** for the project file. Reviewable diffs, no hand-edited `.pbxproj`.
-6. **Swift Testing** for unit tests. Requires Xcode 16+.
-7. **Free, permanently** (decided). No licensing, trial or payment code. Distributed from GitHub Releases with Sparkle auto-updates.
-8. **No analytics, no telemetry.** Crash reports only via Apple's opt-in system reports, unless you decide otherwise.
-9. **Agent-built code is verified by CI and by you on hardware.** This session can't run macOS. Anything UI, permission or performance related is "built, not verified" until you run it.
-10. **English only** until Phase 4. Strings go through `String(localized:)` from day one, so localisation later is mechanical.
-11. **YouTube Music means the website** in Safari or Chrome, not a third-party desktop wrapper.
-12. **Default-on modules at first launch:** Battery, Media (read-only), Shelf. Everything that needs a permission is opt-in.
+1. **Not sandboxed, outside the App Store.** The feature set (event taps, Apple Events, window snapping, terminal) rules out the sandbox.
+2. **Apple silicon first**, macOS 14.6 minimum, built with the Xcode 26 SDK.
+3. **Droppy behaviour comes from public listings, reviews and your brief.** I haven't used it on a device. Each "how Droppy does it" line is marked accordingly. Installing Droppy and checking those lines is a cheap step before approving the plan.
+4. **No Droppy code, assets or wording is used.** It's a closed product, and its older open-source versions are not used either. Behaviour is studied, the code is original.
+5. **Native frameworks before dependencies.**
+   - AVFoundation for video and audio transforms. FFmpeg only if a format gap appears.
+   - ImageIO for images; `ditto` / Apple Archive for zip; `NSDataDetector` for natural-language dates.
+   - Carbon hotkeys for shortcuts, which need no permission.
+6. **No telemetry.** "Learn from use" (principle 6) is computed and stored on device only.
+7. **The agent can't run macOS.** Code is verified by CI (`swift test` on a macOS runner) and by you on hardware.
 
 ## Open questions (blocking Phase 1)
 
-**Q1. Private API policy.** Universal Now Playing (anything a browser plays, including YouTube Music) needs the private MediaRemote framework through a community workaround. Built-in display brightness and keyboard backlight need private DisplayServices and CoreBrightness. Without them, Media covers only Apple Music and Spotify, and the HUD covers volume only.
-*Proposal:* allow them, quarantined in one target, loaded at runtime with a self-test, labelled "Experimental" in Settings, with a kill switch and automatic fallback. *Yes / no / per item?*
+**Q1. Private APIs.** Should I use private APIs, behind an off switch with automatic fallback, for:
+- Universal Now Playing (YouTube Music in a browser, any player)
+- Built-in display brightness and keyboard backlight
 
-**Q2. Identity** (hard to reverse once shipped). ~~Update hosting~~ answered: GitHub Releases.
-(a) Do you have, or will you get, an Apple Developer Program membership? A free app still needs it to install without Gatekeeper warnings and to keep permissions across updates (ARCHITECTURE §12).
-(b) Bundle ID. Proposal: `io.github.vannaenae.UltiNotch`. Changing it later resets every user's permissions and settings. OK?
+Without them, Media covers Apple Music and Spotify only, and the HUD covers volume only. Droppy almost certainly relies on similar routes. My recommendation is yes.
 
-**Q3. Test hardware and tooling.**
-(a) Which notch MacBook, and which macOS versions can you test on?
-(b) Do you have a non-notch external display?
-(c) Is Xcode 26 installed?
-(d) The repo had no branches, so this work branch is currently its only branch, which makes it the default. May I create `main` from it as the base for pull requests?
-(e) The repo is **public**. That means free macOS CI minutes, but also that everything committed is visible, including these docs. Intended?
+**Q2. Apple Developer membership and bundle ID.**
+- A free app still needs the membership to install cleanly, and to keep permissions across updates.
+- Bundle ID proposal: `io.github.vannaenae.UltiNotch`. It's permanent once shipped. OK?
 
-**Q4. "Dynamic Glass".** What do you mean by it?
-*Proposal:* glass tinted live from the current artwork, or the wallpaper when nothing plays. Liquid Glass is Apple's macOS 26 material (native on 26+, approximated on 14–15). Confirm, or describe what you want.
+**Q3. Hardware and branch.**
+- Which notch MacBook, which macOS versions, and is there an external display?
+- Is Xcode 26 installed?
+- May I create `main` so work goes through pull requests?
 
-**Q5. Licence.** ~~Business model~~ answered: free, downloaded from GitHub.
-Free to download is not the same as open source. The repo is public but has no licence, which legally means "look, don't reuse". Options:
-- **MIT or Apache-2.0:** anyone can use, fork, even sell it. Best for contributors and the Phase 4 plugin ecosystem. *Recommended.*
-- **GPL-3.0:** forks must stay open source.
-- **No licence:** source visible, all rights reserved.
-Publishing code under an open licence can't be withdrawn for versions already released, so I won't add one without your call.
+**Q4. Phase 1 cuts.** Two Phase 1 items can't be built well with supported APIs today. My proposal is to move them to Phase 2. See `PHASE1_PLAN.md`.
+- **Reordering the music queue:** neither Apple Music nor Spotify exposes it to other apps.
+- **Synced lyrics:** they need a network lyrics source, which means an opt-in.
+
+**Q5. Meeting helper.**
+- **What it shows:** your own notes and talking points? An agenda with a timer? Live transcription?
+- **Limit to accept:** it will be hidden when you share a single window, and from older capture methods. It **can't** be guaranteed hidden when you share your entire screen on macOS 15 or later. Details in RISKS R9.

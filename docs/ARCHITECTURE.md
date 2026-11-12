@@ -1,6 +1,6 @@
 # Ulti Notch: Architecture
 
-Status: **Draft for review.** Nothing past `NotchCore` is built yet. Items marked **[Decision]** are proposals awaiting sign-off (see `docs/SCOPE.md`, open questions).
+Status: **Draft for review, updated for the v2 brief** (Droppy parity, intuitiveness first; plan in `PHASE1_PLAN.md`). Nothing past `NotchCore` is built yet. Items marked **[Decision]** are proposals awaiting sign-off (see `docs/SCOPE.md`, open questions).
 
 ---
 
@@ -19,6 +19,8 @@ Each non-negotiable maps to a structural mechanism, not a convention.
 | Idle CPU < 1% | No polling anywhere. Event-driven services (notifications, KVO, IOKit run-loop sources, distributed notifications). The activity board gives the single next expiry time (`nextChange`), so the host arms one timer, not a ticker. Views animate only while visible. |
 | Expand under 16 ms/frame | Window never resizes during animation (fixed envelope frame, §3.2). Only the SwiftUI shape animates. Expanded views are built lazily. Artwork is decoded off-main and cached at display size. |
 | No GPL code | Clean-room. Behaviour is studied from running apps and public docs. Every third-party dependency's licence is recorded in `docs/THIRD_PARTY.md` (created with the first dependency). |
+| Discoverable, not memorised | Commands are declared on the **descriptor** (`CommandDescriptor`), so the palette can find a disabled module's actions and offer to enable it. |
+| Calm by default | Only `requestsPeek` activities enlarge the island. Focus modes downgrade non-critical peeks to silent updates. |
 | Future third-party plugins | Live-activity content is a declarative, `Codable` value (`ActivityContent`/`Glyph`), so an out-of-process plugin can drive the island without shipping views into our process (§9). |
 
 ---
@@ -195,8 +197,10 @@ public struct ModuleDescriptor: Codable, Sendable {      // readable without con
 @MainActor public protocol NotchModule: ModuleLifecycle {
     func compactView(for: LiveActivity, side: CompactSide) -> AnyView?  // nil → host renders ActivityContent
     func expandedView() -> AnyView?
-    func panelView() -> AnyView?
-    func lockScreenView() -> AnyView?          // Phase 3
+    func panelView() -> AnyView?               // the "full shelf"
+    func shelfWidgetView() -> AnyView?         // reorderable widget in the shelf
+    func perform(command id: String) async     // palette actions from descriptor.commands
+    func lockScreenView() -> AnyView?          // Phase 2 spike (RISKS R7)
     static func settingsView() -> AnyView?     // static: shown while the module is disabled
 }
 
@@ -206,7 +210,7 @@ ModuleContext.withdraw(key:)
 ModuleContext.acquire(ServiceKey<S>) -> S?
 ```
 
-Mapping to the brief: *id, name, permissions, compact view, expanded view, optional lock screen view, settings view, priority* are all present. *Priority* is `defaultPriority` on the descriptor, overridable per activity.
+Mapping to the v2 brief: *id, name, permissions, compact view, expanded view, shelf widget, lock screen view, settings view, command palette actions, priority signals* are all present. *Priority signals* are `defaultPriority` on the descriptor plus per-activity `priority`, `lifetime` and `requestsPeek`. State name mapping: `panel` = the brief's "full shelf".
 
 Module rules (also in the protocol's doc comment):
 
@@ -436,3 +440,5 @@ Each module is its own SwiftPM target. That gives four things:
 | D8 | Free app; distributed via GitHub Releases; Sparkle feed at `releases/latest/download/appcast.xml` | Decided (owner) |
 | D9 | Bundle ID `io.github.vannaenae.UltiNotch` (standard reverse-DNS for a GitHub-hosted project without its own domain) | Proposed — confirm before first signed build |
 | D10 | Release automation via tagged GitHub Actions workflow; Homebrew tap | Proposed |
+| D11 | Open source, MIT | Decided (owner) |
+| D12 | Command palette moves into Phase 1 (discoverability backbone) | Proposed — PHASE1_PLAN |
