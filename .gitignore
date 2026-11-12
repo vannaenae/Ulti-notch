@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Xcode / SwiftPM
+*.xcodeproj
+!Packages/**/*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+.build/
+.swiftpm/
+Package.resolved.bak
+*.xcresult
+
+# Release artefacts
+build/
+dist/
+*.dmg
+*.zip
+*.app
+*.dSYM
+*.dSYM.zip
+
+# Secrets — never commit signing material or Sparkle private keys
+*.p12
+*.cer
+*.mobileprovision
+sparkle_private_key*
+.env
