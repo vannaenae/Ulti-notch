@@ -294,17 +294,56 @@ Phase 1 permission map:
 | Expand animation | < 16 ms per frame, no hitches | Instruments *Animation Hitches* template on a 120 Hz ProMotion display, 50 expand/collapse cycles |
 | Cold launch to island visible | < 500 ms (proposed) | `os_signpost` intervals |
 
-Every service and the shell emit `os_signpost` intervals under the subsystem `app.ultinotch` (subject to Q2). Performance numbers are reported per module, as the brief asks.
+Every service and the shell emit `os_signpost` intervals under the subsystem matching the bundle ID (D9). Performance numbers are reported per module, as the brief asks.
 
 ---
 
 ## 12. Distribution
 
-- Developer ID Application signing, hardened runtime, notarised with `notarytool`, stapled, shipped as a DMG. A release script lives in `scripts/` and runs locally or in CI with secrets.
+**Decided:** free, downloaded from GitHub. No paywall, no licence keys, no trial code.
+
+### Channel
+
+| What | Where |
+|---|---|
+| App download | GitHub Releases. Each release has `UltiNotch-x.y.z.dmg` (drag to Applications) and `UltiNotch-x.y.z.zip` (used by Sparkle). |
+| Download link in README | `https://github.com/vannaenae/Ulti-notch/releases/latest`, a stable link that always points at the newest release |
+| Auto-updates | Sparkle 2 (MIT). Feed URL baked into the app: `https://github.com/vannaenae/Ulti-notch/releases/latest/download/appcast.xml`. GitHub redirects that URL to the newest release's asset, so there's nothing extra to host. **This URL is permanent once a build ships**; renaming or moving the repo means older installs stop seeing updates unless the redirect holds. |
+| One-line install (later in Phase 1) | Own Homebrew tap: `brew install --cask vannaenae/tap/ulti-notch`. The release workflow updates the cask. The official homebrew-cask repo can come later once the project meets its notability rules. |
+
+### Release pipeline (`.github/workflows/release.yml`, built with the Phase 1 signing step)
+
+Triggered by pushing a tag `vX.Y.Z`, on a GitHub macOS runner:
+
+1. Build and archive with Xcode 26 (Release, hardened runtime).
+2. Sign with the Developer ID Application certificate, imported into a throwaway keychain from a repo secret.
+3. Notarise with `notarytool` using an App Store Connect API key (secret), then staple.
+4. Package: DMG via `hdiutil`, zip via `ditto`.
+5. Sign the update with Sparkle's `sign_update` (EdDSA private key from a secret) and generate `appcast.xml`.
+6. Create the GitHub Release with DMG, zip, appcast and notes taken from `CHANGELOG.md`.
+7. Bump the Homebrew cask.
+
+Repo secrets needed (you add them; they never appear in code or logs):
+
+- `DEVELOPER_ID_P12`, `DEVELOPER_ID_P12_PASSWORD`
+- `NOTARY_KEY_P8`, `NOTARY_KEY_ID`, `NOTARY_ISSUER_ID`
+- `SPARKLE_ED_PRIVATE_KEY`
+
+### Why the Apple Developer Program still matters for a free app
+
+"Free and easy to download" depends on it:
+
+- **Gatekeeper.** Un-notarised apps downloaded from the internet are blocked on open. On recent macOS the user has to go to System Settings → Privacy & Security → Open Anyway. That's a hard stop for most people.
+- **Permissions survive updates.** macOS ties Accessibility and Automation grants to the app's code signature. With a stable Developer ID, an update keeps them. With ad-hoc signing, the identity changes every build, so users would have to re-grant Accessibility (needed by the HUD module) after **every** update.
+- **Cost:** the Apple Developer Program is a paid annual membership. That's the only running cost of this distribution model; GitHub Releases and Actions are free on a public repo.
+
+Fallback if there's no account at first: ad-hoc signed builds, with a README section explaining Open Anyway, labelled "preview". Sparkle still works because it verifies with EdDSA, not Apple signing. Not recommended beyond early testers.
+
+### Other
+
 - **Not sandboxed.** **[Decision]** Event taps that consume events, Apple Events to other apps, launching the MediaRemote adapter, and Phase 3 window management and terminal all conflict with App Sandbox. App Store distribution is already out of scope.
 - Hardened runtime entitlements, minimal set: `com.apple.security.automation.apple-events` (Music and Spotify control). Nothing else is planned for Phase 1. The adapter runs as a child process under `/usr/bin/perl` and needs no entitlement on our side.
-- **Sparkle 2** (MIT licence), EdDSA-signed appcast. Feed hosting is **[Decision — Q2]**. Proposed: GitHub Releases for binaries plus a static `appcast.xml`.
-- The EdDSA private key and Developer ID certificate never enter the repo (`.gitignore` covers common files). They live in the Keychain and CI secrets.
+- Signing material and the Sparkle private key never enter the repo (`.gitignore` covers common files).
 
 ---
 
@@ -394,3 +433,6 @@ Each module is its own SwiftPM target. That gives four things:
 | D5 | Private APIs only in `PlatformBridges`, dlopen + runtime probe + kill switch | Proposed — Q1 |
 | D6 | Plugins out of process; activities are declarative data | Adopted for protocol design; tech choice in Phase 4 |
 | D7 | Swift Testing for new tests | Adopted |
+| D8 | Free app; distributed via GitHub Releases; Sparkle feed at `releases/latest/download/appcast.xml` | Decided (owner) |
+| D9 | Bundle ID `io.github.vannaenae.UltiNotch` (standard reverse-DNS for a GitHub-hosted project without its own domain) | Proposed — confirm before first signed build |
+| D10 | Release automation via tagged GitHub Actions workflow; Homebrew tap | Proposed |

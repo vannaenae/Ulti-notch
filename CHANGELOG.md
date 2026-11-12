@@ -11,3 +11,6 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follo
   - `NotchModuleKit`: SwiftUI `NotchModule` protocol.
   - Unit tests for all of the above (Swift Testing).
 - CI: build and test on a GitHub-hosted macOS runner.
+
+### Decided
+- Ulti Notch is free and distributed from GitHub Releases, with Sparkle auto-updates and a Homebrew tap. Distribution plan in `docs/ARCHITECTURE.md` §12.

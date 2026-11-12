@@ -39,7 +39,7 @@ Each assumption is reversible unless marked ⚠︎.
 4. **macOS 14.6 minimum, built with the Xcode 26 SDK** so native Liquid Glass is available on macOS 26+.
 5. **SwiftPM for all logic, a thin app target, XcodeGen** for the project file. Reviewable diffs, no hand-edited `.pbxproj`.
 6. **Swift Testing** for unit tests. Requires Xcode 16+.
-7. **Free during Phase 1.** No licensing, trial or payment code until you decide the business model (Q5).
+7. **Free, permanently** (decided). No licensing, trial or payment code. Distributed from GitHub Releases with Sparkle auto-updates.
 8. **No analytics, no telemetry.** Crash reports only via Apple's opt-in system reports, unless you decide otherwise.
 9. **Agent-built code is verified by CI and by you on hardware.** This session can't run macOS. Anything UI, permission or performance related is "built, not verified" until you run it.
 10. **English only** until Phase 4. Strings go through `String(localized:)` from day one, so localisation later is mechanical.
@@ -51,10 +51,9 @@ Each assumption is reversible unless marked ⚠︎.
 **Q1. Private API policy.** Universal Now Playing (anything a browser plays, including YouTube Music) needs the private MediaRemote framework through a community workaround. Built-in display brightness and keyboard backlight need private DisplayServices and CoreBrightness. Without them, Media covers only Apple Music and Spotify, and the HUD covers volume only.
 *Proposal:* allow them, quarantined in one target, loaded at runtime with a self-test, labelled "Experimental" in Settings, with a kill switch and automatic fallback. *Yes / no / per item?*
 
-**Q2. Identity and update hosting** (hard to reverse once shipped).
-(a) Do you have an Apple Developer team?
-(b) Bundle ID: do you own a domain for reverse-DNS, e.g. `app.ultinotch.UltiNotch`? Changing it later resets every user's permissions and settings.
-(c) Sparkle feed: GitHub Releases plus a static appcast, or your own domain? The feed URL is baked into every shipped build.
+**Q2. Identity** (hard to reverse once shipped). ~~Update hosting~~ answered: GitHub Releases.
+(a) Do you have, or will you get, an Apple Developer Program membership? A free app still needs it to install without Gatekeeper warnings and to keep permissions across updates (ARCHITECTURE §12).
+(b) Bundle ID. Proposal: `io.github.vannaenae.UltiNotch`. Changing it later resets every user's permissions and settings. OK?
 
 **Q3. Test hardware and tooling.**
 (a) Which notch MacBook, and which macOS versions can you test on?
@@ -66,4 +65,9 @@ Each assumption is reversible unless marked ⚠︎.
 **Q4. "Dynamic Glass".** What do you mean by it?
 *Proposal:* glass tinted live from the current artwork, or the wallpaper when nothing plays. Liquid Glass is Apple's macOS 26 material (native on 26+, approximated on 14–15). Confirm, or describe what you want.
 
-**Q5. Licence and business model.** Open source (which licence?) or closed source? Free, paid once, or subscription? This decides the repo licence, the plugin SDK licence, how we satisfy FFmpeg's LGPL in Phase 2, and whether licensing or trial code belongs in Phase 1.
+**Q5. Licence.** ~~Business model~~ answered: free, downloaded from GitHub.
+Free to download is not the same as open source. The repo is public but has no licence, which legally means "look, don't reuse". Options:
+- **MIT or Apache-2.0:** anyone can use, fork, even sell it. Best for contributors and the Phase 4 plugin ecosystem. *Recommended.*
+- **GPL-3.0:** forks must stay open source.
+- **No licence:** source visible, all rights reserved.
+Publishing code under an open licence can't be withdrawn for versions already released, so I won't add one without your call.
