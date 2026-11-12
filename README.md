@@ -1,6 +1,6 @@
 # Ulti Notch
 
-Native macOS app that turns the MacBook notch into a Dynamic Island style command surface. Live activities, widgets and utilities in one quiet, fast app. Non-notch displays get a floating island.
+Free, open source (MIT) macOS app that turns the MacBook notch into a Dynamic Island style command surface. Live activities, widgets and utilities in one quiet, fast app. Non-notch displays get a floating island.
 
 ## Download
 
@@ -11,6 +11,7 @@ Free. Builds will be published on the [Releases page](https://github.com/vannaen
 | Doc | What it covers |
 |---|---|
 | [`docs/SCOPE.md`](docs/SCOPE.md) | Scope, assumptions, open questions |
+| [`docs/PHASE1_PLAN.md`](docs/PHASE1_PLAN.md) | Phase 1 features: Droppy parity, simpler (awaiting approval) |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Architecture, module protocol, folder structure |
 | [`docs/RISKS.md`](docs/RISKS.md) | Technical risk research (Now Playing, HUD, windows, glass, permissions) |
 | [`docs/TECH_DEBT.md`](docs/TECH_DEBT.md) | Running technical debt list |
