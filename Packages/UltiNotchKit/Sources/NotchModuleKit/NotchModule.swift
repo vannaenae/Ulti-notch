@@ -22,8 +22,15 @@ public protocol NotchModule: ModuleLifecycle {
     /// Content for the expanded island.
     func expandedView() -> AnyView?
 
-    /// Content for the full panel.
+    /// Content for the full shelf.
     func panelView() -> AnyView?
+
+    /// Small widget the user can place and reorder in the full shelf.
+    func shelfWidgetView() -> AnyView?
+
+    /// Run a command from the descriptor's `commands`. Only called while active; the
+    /// palette enables the module first if needed.
+    func perform(command id: String) async
 
     /// Lock screen widget (Phase 3).
     func lockScreenView() -> AnyView?
@@ -42,6 +49,8 @@ public extension NotchModule {
     func compactView(for activity: LiveActivity, side: CompactSide) -> AnyView? { nil }
     func expandedView() -> AnyView? { nil }
     func panelView() -> AnyView? { nil }
+    func shelfWidgetView() -> AnyView? { nil }
+    func perform(command id: String) async {}
     func lockScreenView() -> AnyView? { nil }
     static func settingsView() -> AnyView? { nil }
 }

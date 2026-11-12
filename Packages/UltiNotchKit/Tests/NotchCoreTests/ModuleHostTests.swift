@@ -243,13 +243,27 @@ struct ModuleDescriptorTests {
         #expect(d.validationIssues == [.enabledByDefaultButUsesNetwork])
     }
 
+    @Test func commandIDsMustBeUnique() {
+        let command = CommandDescriptor(id: "start", title: "Start", symbolName: "play")
+        let d = ModuleDescriptor(
+            id: "app.ultinotch.pomodoro",
+            name: "Pomodoro",
+            summary: "Focus timer",
+            symbolName: "timer",
+            surfaces: [.shelfWidget],
+            commands: [command, command]
+        )
+        #expect(d.validationIssues == [.duplicateCommandID])
+    }
+
     @Test func descriptorRoundTripsThroughJSON() throws {
         let d = ModuleDescriptor(
             id: "app.ultinotch.media",
             name: "Media",
             summary: "Now playing",
             symbolName: "music.note",
-            surfaces: [.compact, .expanded, .settings],
+            surfaces: [.compact, .expanded, .settings, .shelfWidget],
+            commands: [CommandDescriptor(id: "playPause", title: "Play or pause", keywords: ["music"], symbolName: "playpause")],
             permissions: [PermissionRequirement(.automation, target: "com.apple.Music", reason: "Control Music.", isRequired: false)],
             services: ["nowPlaying"],
             usesPrivateAPI: true

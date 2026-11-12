@@ -42,6 +42,29 @@ public struct ModuleSurfaces: OptionSet, Hashable, Sendable, Codable {
     public static let lockScreen = ModuleSurfaces(rawValue: 1 << 3)
     /// A section in the Settings window.
     public static let settings = ModuleSurfaces(rawValue: 1 << 4)
+    /// A small reorderable widget in the full shelf (Pomodoro, weather, CPU graph).
+    public static let shelfWidget = ModuleSurfaces(rawValue: 1 << 5)
+}
+
+/// An action the command palette can find and run, e.g. "Start 25-minute focus".
+///
+/// Declared on the descriptor, not the instance, so the palette can list a disabled
+/// module's commands and offer to switch it on: the feature is discoverable by typing
+/// even before the user knows it exists.
+public struct CommandDescriptor: Hashable, Sendable, Codable, Identifiable {
+    /// Unique within the module.
+    public let id: String
+    public var title: String
+    /// Extra words the palette matches on ("caffeinate" finds "Stay awake").
+    public var keywords: [String]
+    public var symbolName: String
+
+    public init(id: String, title: String, keywords: [String] = [], symbolName: String) {
+        self.id = id
+        self.title = title
+        self.keywords = keywords
+        self.symbolName = symbolName
+    }
 }
 
 /// Everything the host needs to know about a module *without instantiating it*.
@@ -56,6 +79,7 @@ public struct ModuleDescriptor: Hashable, Sendable, Codable, Identifiable {
     /// SF Symbol name used in Settings and onboarding.
     public var symbolName: String
     public var surfaces: ModuleSurfaces
+    public var commands: [CommandDescriptor]
     public var permissions: [PermissionRequirement]
     /// Services the module will acquire. Lets Settings explain resource use and lets
     /// the host pre-validate that every service is registered.
@@ -76,6 +100,7 @@ public struct ModuleDescriptor: Hashable, Sendable, Codable, Identifiable {
         summary: String,
         symbolName: String,
         surfaces: ModuleSurfaces,
+        commands: [CommandDescriptor] = [],
         permissions: [PermissionRequirement] = [],
         services: [String] = [],
         defaultPriority: ActivityPriority = .normal,
@@ -88,6 +113,7 @@ public struct ModuleDescriptor: Hashable, Sendable, Codable, Identifiable {
         self.summary = summary
         self.symbolName = symbolName
         self.surfaces = surfaces
+        self.commands = commands
         self.permissions = permissions
         self.services = services
         self.defaultPriority = defaultPriority
@@ -103,6 +129,7 @@ public struct ModuleDescriptor: Hashable, Sendable, Codable, Identifiable {
         if !id.isWellFormed { issues.append(.malformedID) }
         if name.trimmingCharacters(in: .whitespaces).isEmpty { issues.append(.missingName) }
         if surfaces.isEmpty { issues.append(.noSurfaces) }
+        if Set(commands.map(\.id)).count != commands.count { issues.append(.duplicateCommandID) }
         // First launch must need zero permissions.
         if enabledByDefault && permissions.contains(where: \.isRequired) {
             issues.append(.enabledByDefaultButNeedsPermission)
@@ -123,4 +150,5 @@ public enum ModuleValidationIssue: String, Hashable, Sendable, Codable {
     case enabledByDefaultButNeedsPermission
     case enabledByDefaultButUsesNetwork
     case permissionWithoutReason
+    case duplicateCommandID
 }
