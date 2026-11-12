@@ -98,4 +98,4 @@ Sources: [Apple Developer Forums: OSDUIHelper on Tahoe](https://developer.apple.
 
 - The cloud session this work is produced in runs Linux with no Swift toolchain and no route to download one. **Nothing here has been compiled locally.**
 - Mitigation: GitHub Actions on `macos-15` builds and tests `UltiNotchKit` on every push. UI, shell, permissions and performance can only be verified on your Mac. The checklist and Instruments steps are written for that.
-- Cost note: on a private repo, macOS runner minutes are billed at a multiple of Linux minutes. The workflow is path-filtered and cancels superseded runs to keep usage low.
+- Cost note: the repo is public, so GitHub-hosted macOS minutes are free. If it goes private, macOS minutes are billed at a multiple of Linux minutes. The workflow is path-filtered and cancels superseded runs either way.

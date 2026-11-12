@@ -60,8 +60,8 @@ Each assumption is reversible unless marked ⚠︎.
 (a) Which notch MacBook, and which macOS versions can you test on?
 (b) Do you have a non-notch external display?
 (c) Is Xcode 26 installed?
-(d) The repo is empty with no `main` branch. May I create `main` as the base for pull requests?
-(e) Is the repo private? macOS CI minutes are billed at a premium on private repos. OK to keep CI on?
+(d) The repo had no branches, so this work branch is currently its only branch, which makes it the default. May I create `main` from it as the base for pull requests?
+(e) The repo is **public**. That means free macOS CI minutes, but also that everything committed is visible, including these docs. Intended?
 
 **Q4. "Dynamic Glass".** What do you mean by it?
 *Proposal:* glass tinted live from the current artwork, or the wallpaper when nothing plays. Liquid Glass is Apple's macOS 26 material (native on 26+, approximated on 14–15). Confirm, or describe what you want.
