@@ -4,9 +4,19 @@ Free, open source (MIT) macOS app that turns the MacBook notch into a Dynamic Is
 
 ## Download
 
-Free. Builds will be published on the [Releases page](https://github.com/vannaenae/Ulti-notch/releases/latest) with automatic updates. No release yet.
+Free. Download the DMG from the [Releases page](https://github.com/vannaenae/Ulti-notch/releases), open it and drag Ulti Notch to Applications.
 
-**Status:** architecture and core contracts. Phase 1 has not started; open questions are in [`docs/SCOPE.md`](docs/SCOPE.md).
+Preview builds are not notarised yet. The first time you open the app, macOS will block it: go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+## Build from source
+
+```bash
+brew install xcodegen
+xcodegen generate
+open UltiNotch.xcodeproj
+```
+
+**Status:** Phase 1 in progress. Working now: island on every display, Battery, Now Playing (Music and Spotify), Settings.
 
 | Doc | What it covers |
 |---|---|

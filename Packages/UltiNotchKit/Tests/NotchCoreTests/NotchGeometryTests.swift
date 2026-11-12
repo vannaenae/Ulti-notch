@@ -88,6 +88,31 @@ struct NotchGeometryTests {
     @Test func externalDisplayUsesItsOwnOrigin() {
         let frame = NotchGeometry.islandFrame(for: .expanded, on: external)
         #expect(frame.minX > external.frame.minX)
-        #expect(frame.maxY == external.frame.maxY - 6)
+        #expect(frame.maxY == external.frame.maxY)
+    }
+
+    @Test func hardwareNotchHeightIsExact() {
+        for state in [IslandState.collapsed, .peek] {
+            #expect(NotchGeometry.islandFrame(for: state, on: notched).height == notched.safeAreaTop)
+        }
+    }
+
+    @Test func externalDisplayCopiesTheRealNotchHeight() {
+        var display = external
+        display.menuBarHeight = 25
+        display.referenceNotchHeight = 37
+        for state in [IslandState.collapsed, .peek] {
+            let frame = NotchGeometry.islandFrame(for: state, on: display)
+            #expect(frame.height == 37)
+            #expect(frame.maxY == display.frame.maxY, "flush with the top edge")
+        }
+    }
+
+    @Test func externalDisplayWithoutAnyNotchMatchesItsMenuBar() {
+        var display = external
+        display.menuBarHeight = 25
+        #expect(NotchGeometry.notch(on: display).rect.height == 25)
+        display.menuBarHeight = 0 // menu bar hidden
+        #expect(NotchGeometry.notch(on: display).rect.height == CGFloat(IslandLayout().virtualNotchHeight))
     }
 }

@@ -1,0 +1,51 @@
+name: UltiNotch
+options:
+  bundleIdPrefix: io.github.vannaenae
+  deploymentTarget:
+    macOS: "14.6"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  UltiNotchKit:
+    path: Packages/UltiNotchKit
+targets:
+  UltiNotch:
+    type: application
+    platform: macOS
+    sources: [App]
+    scheme: {}
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Ulti Notch
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: MIT License
+        NSAppleEventsUsageDescription: Ulti Notch controls playback in Music and Spotify when you press play, pause or skip in the notch.
+    entitlements:
+      path: App/UltiNotch.entitlements
+      properties:
+        com.apple.security.automation.apple-events: true
+    settings:
+      base:
+        PRODUCT_NAME: Ulti Notch
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.vannaenae.UltiNotch
+        ENABLE_HARDENED_RUNTIME: YES
+        # Ad-hoc signing until a Developer ID is available (ARCHITECTURE §12).
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+    dependencies:
+      - package: UltiNotchKit
+        product: NotchShell
+      - package: UltiNotchKit
+        product: Modules
+      - package: UltiNotchKit
+        product: Services
+      - package: UltiNotchKit
+        product: NotchModuleKit

@@ -44,6 +44,11 @@ Feature-by-feature plan and proposed cuts: [`PHASE1_PLAN.md`](PHASE1_PLAN.md). *
 | Distribution | GitHub Releases, Sparkle auto-update, Homebrew tap (ARCHITECTURE §12) |
 | Licence | Open source, **MIT**. Switching licence is still cheap before the first release, because only you hold copyright so far. |
 | Dynamic Glass | Per the v2 brief: solid black at the notch, melting into glass below. Liquid Glass is Apple's native material on macOS 26+, with a fallback on 14 and 15. Solid style in Low Power Mode. |
+| Phase 1 plan | Approved as written, including moving queue reordering and synced lyrics to Phase 2 (delegated: "do whatever to get this across the bridge") |
+| Private APIs | Allowed, quarantined in `PlatformBridges`, runtime self-test, off switch, automatic fallback (delegated) |
+| Bundle ID | `io.github.vannaenae.UltiNotch` (delegated) |
+| Base branch | `main` created; work lands through pull requests |
+| Meeting helper | Phase 2: your own notes and agenda with a timer, window hidden from capture where macOS allows (RISKS R9) (delegated) |
 | Extensions | Called **modules**, first-party or third-party. We don't reuse Droppy's term "Droplets". |
 
 ## Assumptions
@@ -59,27 +64,8 @@ Feature-by-feature plan and proposed cuts: [`PHASE1_PLAN.md`](PHASE1_PLAN.md). *
 6. **No telemetry.** "Learn from use" (principle 6) is computed and stored on device only.
 7. **The agent can't run macOS.** Code is verified by CI (`swift test` on a macOS runner) and by you on hardware.
 
-## Open questions (blocking Phase 1)
+## Open questions
 
-**Q1. Private APIs.** Should I use private APIs, behind an off switch with automatic fallback, for:
-- Universal Now Playing (YouTube Music in a browser, any player)
-- Built-in display brightness and keyboard backlight
+Only one remains, and it doesn't block building:
 
-Without them, Media covers Apple Music and Spotify only, and the HUD covers volume only. Droppy almost certainly relies on similar routes. My recommendation is yes.
-
-**Q2. Apple Developer membership and bundle ID.**
-- A free app still needs the membership to install cleanly, and to keep permissions across updates.
-- Bundle ID proposal: `io.github.vannaenae.UltiNotch`. It's permanent once shipped. OK?
-
-**Q3. Hardware and branch.**
-- Which notch MacBook, which macOS versions, and is there an external display?
-- Is Xcode 26 installed?
-- May I create `main` so work goes through pull requests?
-
-**Q4. Phase 1 cuts.** Two Phase 1 items can't be built well with supported APIs today. My proposal is to move them to Phase 2. See `PHASE1_PLAN.md`.
-- **Reordering the music queue:** neither Apple Music nor Spotify exposes it to other apps.
-- **Synced lyrics:** they need a network lyrics source, which means an opt-in.
-
-**Q5. Meeting helper.**
-- **What it shows:** your own notes and talking points? An agenda with a timer? Live transcription?
-- **Limit to accept:** it will be hidden when you share a single window, and from older capture methods. It **can't** be guaranteed hidden when you share your entire screen on macOS 15 or later. Details in RISKS R9.
+**Apple Developer membership.** Until it exists, releases are ad-hoc signed previews. Users must click "Open Anyway" once, and must re-grant Accessibility after each update. Add the secrets listed in ARCHITECTURE §12 and the release workflow can switch to notarised builds.

@@ -16,17 +16,26 @@ public struct DisplayGeometry: Equatable, Sendable {
     public var auxiliaryTopLeftWidth: CGFloat?
     /// `NSScreen.auxiliaryTopRightArea?.width`: menu bar space right of the notch.
     public var auxiliaryTopRightWidth: CGFloat?
+    /// `frame.maxY - visibleFrame.maxY`. Zero when the menu bar is hidden.
+    public var menuBarHeight: CGFloat
+    /// Height of the Mac's real notch, if any connected display has one. Displays
+    /// without a notch copy it so every island is exactly notch height.
+    public var referenceNotchHeight: CGFloat?
 
     public init(
         frame: CGRect,
         safeAreaTop: CGFloat = 0,
         auxiliaryTopLeftWidth: CGFloat? = nil,
-        auxiliaryTopRightWidth: CGFloat? = nil
+        auxiliaryTopRightWidth: CGFloat? = nil,
+        menuBarHeight: CGFloat = 0,
+        referenceNotchHeight: CGFloat? = nil
     ) {
         self.frame = frame
         self.safeAreaTop = safeAreaTop
         self.auxiliaryTopLeftWidth = auxiliaryTopLeftWidth
         self.auxiliaryTopRightWidth = auxiliaryTopRightWidth
+        self.menuBarHeight = menuBarHeight
+        self.referenceNotchHeight = referenceNotchHeight
     }
 }
 
@@ -48,10 +57,12 @@ public struct NotchTuning: Hashable, Sendable, Codable {
 /// Sizes for each state. Defaults are starting points to tune on real hardware,
 /// not measured values.
 public struct IslandLayout: Hashable, Sendable, Codable {
-    /// Collapsed pill on displays without a notch.
+    /// Collapsed island width on displays without a notch.
     public var virtualNotchWidth: Double
+    /// Last-resort height on displays without a notch, used only when there is no real
+    /// notch to copy and the menu bar is hidden.
     public var virtualNotchHeight: Double
-    /// Gap between the top of a non-notch display and the floating island.
+    /// Gap between the top of a non-notch display and the island. 0 = flush, notch-like.
     public var virtualTopMargin: Double
     /// Extra width added on each side of the notch in `.peek`.
     public var peekWingWidth: Double
@@ -63,7 +74,7 @@ public struct IslandLayout: Hashable, Sendable, Codable {
     public init(
         virtualNotchWidth: Double = 190,
         virtualNotchHeight: Double = 32,
-        virtualTopMargin: Double = 6,
+        virtualTopMargin: Double = 0,
         peekWingWidth: Double = 70,
         expandedWidth: Double = 540,
         expandedHeight: Double = 180,
@@ -120,7 +131,9 @@ public enum NotchGeometry {
         }
 
         let width = CGFloat(layout.virtualNotchWidth)
-        let height = CGFloat(layout.virtualNotchHeight)
+        // Exactly notch height: copy the real notch, else match the menu bar it replaces.
+        let height = display.referenceNotchHeight
+            ?? (display.menuBarHeight > 0 ? display.menuBarHeight : CGFloat(layout.virtualNotchHeight))
         let top = frame.maxY - CGFloat(layout.virtualTopMargin)
         let rect = CGRect(x: frame.midX - width / 2, y: top - height, width: width, height: height)
         return NotchShape(kind: .virtual, rect: apply(tuning, to: rect, within: frame, topAnchoredAt: top))

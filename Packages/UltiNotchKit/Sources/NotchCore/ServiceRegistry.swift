@@ -100,3 +100,25 @@ public final class ServiceLease<Service> {
         callback?()
     }
 }
+
+/// Minimal multicast callback list for services with more than one consumer.
+@MainActor
+public final class Broadcast<Value> {
+    private var handlers: [Int: @MainActor (Value) -> Void] = [:]
+    private var nextID = 0
+
+    public init() {}
+
+    @discardableResult
+    public func subscribe(_ handler: @escaping @MainActor (Value) -> Void) -> Int {
+        nextID += 1
+        handlers[nextID] = handler
+        return nextID
+    }
+
+    public func unsubscribe(_ id: Int) { handlers[id] = nil }
+
+    public func send(_ value: Value) {
+        for handler in handlers.values { handler(value) }
+    }
+}

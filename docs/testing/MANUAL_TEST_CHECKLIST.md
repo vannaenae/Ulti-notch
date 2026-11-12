@@ -47,4 +47,21 @@ Run before every release, and after any change to the shell. Record the Mac mode
 - [ ] Memory < 150 MB
 - [ ] Animation Hitches template: no hitches over 50 expand/collapse cycles
 
-Module-specific sections are added as each module lands.
+## Battery
+- [ ] Unplug: island shows battery % for ~3 s, then returns to what it showed before
+- [ ] Plug in: green bolt + % for ~3 s
+- [ ] Below 20% on battery: red battery stays in the island until plugged in
+- [ ] Desktop Mac (no battery): module shows "No battery", nothing appears in the island
+- [ ] Toggle off in Settings: no battery activity appears; Activity Monitor shows no CPU change
+- [ ] Discovery: a first-time user sees it the first time they plug or unplug
+
+## Now Playing
+- [ ] Play in Music: equalizer appears beside the notch
+- [ ] Play in Spotify: same
+- [ ] Hover: expanded view shows title, artist, player name and controls
+- [ ] First press of play/pause asks for Automation permission with the plain reason; controls work after allowing
+- [ ] Deny Automation: track info still shows; controls do nothing, no crash
+- [ ] Switch between Music and Spotify: island follows the one touched last
+- [ ] Pause: compact activity disappears; expanded view still shows the track
+- [ ] Toggle off: no activity, no CPU
+- [ ] Discovery: appears on its own the first time music plays
