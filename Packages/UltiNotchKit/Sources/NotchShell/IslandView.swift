@@ -39,8 +39,9 @@ struct IslandView: View {
 
     private func island(size: CGSize) -> some View {
         let isVirtual = model.notch.kind == .virtual
-        let radius: CGFloat = model.state.isOpen ? 22 : (isVirtual ? size.height / 2 : 10)
-        let top: CGFloat = isVirtual ? radius : 0
+        let radius: CGFloat = model.state.isOpen ? 22 : (isVirtual && model.layout.virtualTopMargin > 0 ? size.height / 2 : 10)
+        // Flush to the top edge looks like a notch (square top). Floating gets a pill.
+        let top: CGFloat = isVirtual && model.layout.virtualTopMargin > 0 ? radius : 0
         let shape = UnevenRoundedRectangle(
             topLeadingRadius: top,
             bottomLeadingRadius: radius,

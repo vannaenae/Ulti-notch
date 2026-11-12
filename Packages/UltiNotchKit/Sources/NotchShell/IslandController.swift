@@ -4,11 +4,14 @@ import SwiftUI
 
 extension DisplayGeometry {
     init(_ screen: NSScreen) {
+        let notchHeight = NSScreen.screens.map(\.safeAreaInsets.top).max() ?? 0
         self.init(
             frame: screen.frame,
             safeAreaTop: screen.safeAreaInsets.top,
             auxiliaryTopLeftWidth: screen.auxiliaryTopLeftArea?.width,
-            auxiliaryTopRightWidth: screen.auxiliaryTopRightArea?.width
+            auxiliaryTopRightWidth: screen.auxiliaryTopRightArea?.width,
+            menuBarHeight: screen.frame.maxY - screen.visibleFrame.maxY,
+            referenceNotchHeight: notchHeight > 0 ? notchHeight : nil
         )
     }
 }
